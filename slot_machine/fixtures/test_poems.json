@@ -1,0 +1,38 @@
+[
+{
+  "model": "slot_machine.poem",
+  "pk": 1,
+  "fields": {
+    "text": "poem-one",
+    "created_at": "2015-12-13T19:09:10.323Z",
+    "modified_at": "2015-12-13T19:09:10.323Z",
+    "words": [
+      1
+    ]
+  }
+},
+{
+  "model": "slot_machine.poem",
+  "pk": 2,
+  "fields": {
+    "text": "poem-two",
+    "created_at": "2015-12-13T19:09:23.127Z",
+    "modified_at": "2015-12-13T19:09:23.127Z",
+    "words": [
+      2
+    ]
+  }
+},
+{
+  "model": "slot_machine.poem",
+  "pk": 3,
+  "fields": {
+    "text": "poem-three",
+    "created_at": "2015-12-13T19:09:23.127Z",
+    "modified_at": "2015-12-13T19:09:23.127Z",
+    "words": [
+      3
+    ]
+  }
+}
+]
