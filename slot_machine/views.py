@@ -13,6 +13,19 @@ class RandomListAPIView(generics.ListAPIView):
         return random.sample(self.model.objects.all(), limit)
 
 class WordList(generics.ListCreateAPIView):
+    """
+    List and create words.
+    Specify primary keys of words to be listed with pk__in parameter.
+    ---
+    GET:
+        parameters:
+            - name: pk__in
+              description: pks of words to be retrieved
+              required: false
+              type: integer
+              allowMultiple: true
+              paramType: query
+    """
     serializer_class = WordSerializer
     model = Word
 
@@ -22,17 +35,48 @@ class WordList(generics.ListCreateAPIView):
         return self.model.objects.all()
 
 class WordRandom(RandomListAPIView):
+    """
+    List randomly selected words.
+    Specify number of words to be randomly selected with limit parameter.
+    ---
+    GET:
+        parameters:
+            - name: limit
+              description: number of random words to list
+              required: false
+              type: integer
+              paramType: query
+    """
     serializer_class = WordSerializer
     model = Word
 
 class PoemCreate(generics.CreateAPIView):
+    """
+    Create poems and add relations to existing words.
+    ---
+    """
     queryset = Poem.objects.all()
     serializer_class = PoemCreateSerializer
 
 class PoemRetrieve(generics.RetrieveAPIView):
+    """
+    Get poems by their primary key.
+    """
     queryset = Poem.objects.all()
     serializer_class = PoemRetrieveSerializer
 
 class PoemRandom(RandomListAPIView):
+    """
+    List randomly selected poems.
+    Specify number of poems to be randomly selected with limit parameter.
+    ---
+    GET:
+        parameters:
+            - name: limit
+              description: number of random poems to list
+              required: false
+              type: integer
+              paramType: query
+    """
     serializer_class = PoemRetrieveSerializer
     model = Poem
