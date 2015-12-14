@@ -8,9 +8,7 @@ class RandomListAPIView(generics.ListAPIView):
         limit = 1
         if 'limit' in self.request.query_params:
             limit = int(self.request.query_params['limit'])
-        if self.model.objects.count() < limit:
-            limit = self.model.objects.count()
-        return random.sample(self.model.objects.all(), limit)
+        return self.model.objects.random(limit)
 
 class WordList(generics.ListCreateAPIView):
     """
