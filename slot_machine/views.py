@@ -1,18 +1,22 @@
 from slot_machine.models import Word, Poem
 from slot_machine.serializers import WordSerializer, PoemCreateSerializer, PoemRetrieveSerializer
-from rest_framework import generics
-import random
+from rest_framework import generics, mixins, status
+from rest_framework.response import Response
 
-class RandomListAPIView(generics.ListAPIView):
-    def get_queryset(self):
-        limit = 1
-        if 'limit' in self.request.query_params:
-            limit = int(self.request.query_params['limit'])
-        return self.model.objects.random(limit)
+class SlotMachineSubmitView(generics.CreateAPIView):
 
-class WordList(generics.ListCreateAPIView):
+    def create(self, request, *args, **kwargs):
+        results = self.get_serializer(self.get_queryset(), many=True)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response({'results': results.data}, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class WordList(generics.ListAPIView):
     """
-    List and create words.
+    List words.
     Specify primary keys of words to be listed with pk__in parameter.
     ---
     GET:
@@ -32,29 +36,24 @@ class WordList(generics.ListCreateAPIView):
             return self.model.objects.filter(pk__in=self.request.query_params.getlist('pk__in'))
         return self.model.objects.all()
 
-class WordRandom(RandomListAPIView):
-    """
-    List randomly selected words.
-    Specify number of words to be randomly selected with limit parameter.
-    ---
-    GET:
-        parameters:
-            - name: limit
-              description: number of random words to list
-              required: false
-              type: integer
-              paramType: query
-    """
-    serializer_class = WordSerializer
-    model = Word
 
-class PoemCreate(generics.CreateAPIView):
+class WordSubmit(SlotMachineSubmitView):
     """
-    Create poems and add relations to existing words.
+    Create words, get 3 random words.
     ---
     """
-    queryset = Poem.objects.all()
+    queryset = Word.objects.random(3)
+    serializer_class = WordSerializer
+
+
+class PoemSubmit(SlotMachineSubmitView):
+    """
+    Create poems, add relations to existing words, get a random poem.
+    ---
+    """
+    queryset = Poem.objects.random(1)
     serializer_class = PoemCreateSerializer
+
 
 class PoemRetrieve(generics.RetrieveAPIView):
     """
@@ -62,19 +61,3 @@ class PoemRetrieve(generics.RetrieveAPIView):
     """
     queryset = Poem.objects.all()
     serializer_class = PoemRetrieveSerializer
-
-class PoemRandom(RandomListAPIView):
-    """
-    List randomly selected poems.
-    Specify number of poems to be randomly selected with limit parameter.
-    ---
-    GET:
-        parameters:
-            - name: limit
-              description: number of random poems to list
-              required: false
-              type: integer
-              paramType: query
-    """
-    serializer_class = PoemRetrieveSerializer
-    model = Poem

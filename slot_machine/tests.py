@@ -10,6 +10,7 @@ class BaseViewTest(APITestCase):
         self.words = Word.objects.all()
         self.poems = Poem.objects.all()
 
+
 class WordListViewTest(BaseViewTest):
     url = reverse('word-list')
 
@@ -32,37 +33,28 @@ class WordListViewTest(BaseViewTest):
         self.assertEqual(response.data[1].get('id'), self.words[2].id)
         self.assertEqual(response.data[1].get('text'), self.words[2].text)
 
+
+class WordSubmitViewTest(BaseViewTest):
+    url = reverse('word-submit')
+
     def test_saves_posted_word(self):
         # Test POST - saves new word
         response = self.client.post(self.url, {'text': 'word-four'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Word.objects.count(), 4)
         self.assertEqual(Word.objects.last().text, 'word-four')
-        self.assertEqual(response.data.get('id'), 4)
-        self.assertEqual(response.data.get('text'), 'word-four')
 
-class WordRandomViewTest(BaseViewTest):
-    url = reverse('word-random')
-
-    def assert_random_get(self, response, limit):
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), limit)
-        for item in response.data:
+    def test_fetches_three_random_words(self):
+        # Test POST - after saving word, fetches three random words and returns them as response
+        response = self.client.post(self.url, {'text': 'word-four'}, format='json')
+        self.assertEqual(len(response.data), 1)
+        for item in response.data.get('results'):
             self.assertIn(item.get('id'), map((lambda x: x.id), self.words))
             self.assertIn(item.get('text'), map((lambda x: x.text), self.words))
 
-    def test_gets_one_random_word_by_default(self):
-        # Test GET - list one random words
-        response = self.client.get(self.url, format='json')
-        self.assert_random_get(response, 1)
 
-    def test_gets_specified_number_of_random_words(self):
-        # Test GET - list specified number of random words
-        response = self.client.get(self.url, {'limit': 2}, format='json')
-        self.assert_random_get(response, 2)
-
-class PoemCreateViewTest(BaseViewTest):
-    url = reverse('poem-create')
+class PoemSubmitViewTest(BaseViewTest):
+    url = reverse('poem-submit')
 
     def test_saves_posted_poem_and_word_relations(self):
         # Test POST - saves new poem and relations to words
@@ -70,8 +62,16 @@ class PoemCreateViewTest(BaseViewTest):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Poem.objects.count(), 4)
         self.assertEqual(Poem.objects.last().text, 'poem-four')
-        self.assertEqual(response.data.get('id'), 4)
-        self.assertEqual(response.data.get('text'), 'poem-four')
+
+    def test_fetches_one_random_poem(self):
+        # Test POST - after saving poem, fetches one poems and returns them as response
+        # Test GET - list one random poem
+        response = self.client.post(self.url, {'text': 'poem-four', 'words': [1]}, format='json')
+        self.assertEqual(len(response.data), 1)
+        for item in response.data.get('results'):
+            self.assertIn(item.get('id'), map((lambda x: x.id), self.poems))
+            self.assertIn(item.get('text'), map((lambda x: x.text), self.poems))
+
 
 class PoemRetrieveViewTest(BaseViewTest):
     url = reverse('poem-retrieve', kwargs={'pk': 1})
@@ -80,23 +80,3 @@ class PoemRetrieveViewTest(BaseViewTest):
         # Test GET - gets a single poem identified by given pk
         response = self.client.get(self.url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-class PoemRandomViewTest(BaseViewTest):
-    url = reverse('poem-random')
-
-    def assert_random_get(self, response, limit):
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), limit)
-        for item in response.data:
-            self.assertIn(item.get('id'), map((lambda x: x.id), self.poems))
-            self.assertIn(item.get('text'), map((lambda x: x.text), self.poems))
-
-    def test_gets_one_random_poem_by_default(self):
-        # Test GET - list one random poem
-        response = self.client.get(self.url, format='json')
-        self.assert_random_get(response, 1)
-
-    def test_gets_specified_number_of_random_poems(self):
-        # Test GET - list specified number of random poems
-        response = self.client.get(self.url, {'limit': 2}, format='json')
-        self.assert_random_get(response, 2)
