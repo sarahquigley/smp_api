@@ -3,7 +3,7 @@
   "model": "slot_machine.word",
   "pk": 1,
   "fields": {
-    "word": "word-one",
+    "text": "word-one",
     "created_at": "2015-12-13T19:01:41.148Z",
     "modified_at": "2015-12-13T19:02:07.991Z"
   }
@@ -12,7 +12,7 @@
   "model": "slot_machine.word",
   "pk": 2,
   "fields": {
-    "word": "word-two",
+    "text": "word-two",
     "created_at": "2015-12-13T19:02:17.683Z",
     "modified_at": "2015-12-13T19:02:17.683Z"
   }
@@ -21,7 +21,7 @@
   "model": "slot_machine.word",
   "pk": 3,
   "fields": {
-    "word": "word-three",
+    "text": "word-three",
     "created_at": "2015-12-13T19:02:25.234Z",
     "modified_at": "2015-12-13T19:02:25.234Z"
   }

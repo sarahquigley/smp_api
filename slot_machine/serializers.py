@@ -4,7 +4,7 @@ from slot_machine.models import Word, Poem
 class WordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Word
-        fields = ('id', 'word', 'created_at', 'modified_at')
+        fields = ('id', 'text', 'created_at', 'modified_at')
 
 class PoemRetrieveSerializer(serializers.ModelSerializer):
     class Meta:

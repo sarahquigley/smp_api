@@ -20,7 +20,7 @@ class WordListViewTest(BaseViewTest):
         self.assertEqual(len(response.data), 3)
         for i, item in enumerate(response.data):
             self.assertEqual(item.get('id'), self.words[i].id)
-            self.assertEqual(item.get('word'), self.words[i].word)
+            self.assertEqual(item.get('text'), self.words[i].text)
 
     def test_gets_word_list_filtered_by_pk(self):
         # Test GET - list words filtered by pk
@@ -28,18 +28,18 @@ class WordListViewTest(BaseViewTest):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
         self.assertEqual(response.data[0].get('id'), self.words[0].id)
-        self.assertEqual(response.data[0].get('word'), self.words[0].word)
+        self.assertEqual(response.data[0].get('text'), self.words[0].text)
         self.assertEqual(response.data[1].get('id'), self.words[2].id)
-        self.assertEqual(response.data[1].get('word'), self.words[2].word)
+        self.assertEqual(response.data[1].get('text'), self.words[2].text)
 
     def test_saves_posted_word(self):
         # Test POST - saves new word
-        response = self.client.post(self.url, {'word': 'word-four'}, format='json')
+        response = self.client.post(self.url, {'text': 'word-four'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Word.objects.count(), 4)
-        self.assertEqual(Word.objects.last().word, 'word-four')
+        self.assertEqual(Word.objects.last().text, 'word-four')
         self.assertEqual(response.data.get('id'), 4)
-        self.assertEqual(response.data.get('word'), 'word-four')
+        self.assertEqual(response.data.get('text'), 'word-four')
 
 class WordRandomViewTest(BaseViewTest):
     url = reverse('word-random')
@@ -49,7 +49,7 @@ class WordRandomViewTest(BaseViewTest):
         self.assertEqual(len(response.data), limit)
         for item in response.data:
             self.assertIn(item.get('id'), map((lambda x: x.id), self.words))
-            self.assertIn(item.get('word'), map((lambda x: x.word), self.words))
+            self.assertIn(item.get('text'), map((lambda x: x.text), self.words))
 
     def test_gets_one_random_word_by_default(self):
         # Test GET - list one random words

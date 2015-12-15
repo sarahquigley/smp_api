@@ -14,13 +14,13 @@ class SlotMachineQuerySet(models.QuerySet):
         return self.order_by('?')[:limit]
 
 class Word(models.Model):
-    word = models.CharField(max_length=255)
+    text = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
     objects = SlotMachineQuerySet.as_manager()
 
     def __unicode__(self):
-        return self.word
+        return self.text
 
 
 class Poem(models.Model):

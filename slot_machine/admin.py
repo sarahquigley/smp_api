@@ -6,7 +6,7 @@ class PoemForm(forms.ModelForm):
     words = forms.ModelMultipleChoiceField(queryset=Word.objects.all())
 
 class WordAdmin(admin.ModelAdmin):
-    list_display = ('word', 'created_at', 'modified_at')
+    list_display = ('text', 'created_at', 'modified_at')
     readonly_fields = ('created_at', 'modified_at')
 
 class PoemAdmin(admin.ModelAdmin):
