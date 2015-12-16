@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from django.db import models
+from django.core.validators import RegexValidator
 import random
 
 class SlotMachineQuerySet(models.QuerySet):
@@ -14,13 +15,25 @@ class SlotMachineQuerySet(models.QuerySet):
         return self.order_by('?')[:limit]
 
 class Word(models.Model):
-    text = models.CharField(max_length=255)
+    text = models.CharField(
+        max_length=255,
+        validators=[
+            RegexValidator(
+                regex=ur'^[\-a-zA-Z\u00C0-\u017F]{1,255}$',
+                message='Enter one word without spaces or punctuation.'
+            ),
+        ]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
     objects = SlotMachineQuerySet.as_manager()
 
     def __unicode__(self):
         return self.text
+
+    def save(self, *args, **kwargs):
+        self.text = self.text.lower()
+        super(Word, self).save(*args, **kwargs)
 
 
 class Poem(models.Model):
