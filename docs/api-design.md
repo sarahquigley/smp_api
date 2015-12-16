@@ -17,6 +17,9 @@
   - Fetch preview of poems in handwriting.
   - On poem submission, save rendered poem PNG and PDF.
   - Fetch rendered poem PNG and PDF.
+4. Add seed data
+  - 1000 most basic English words
+  - 20 seed poems
 
   Additionally, must also set up any configuration necessary for deployment on Heroku.
 
@@ -77,7 +80,7 @@ Type: application/json
     [
       {
         "id": 0,
-        "word": "string",
+        "text": "string",
         "created_at": "string",
         "modified_at": "string"
       }
@@ -100,14 +103,16 @@ Array of randomly selected word(s).
 
 Type: application/json
 
-    [
-      {
-        "id": 0,
-        "word": "string",
-        "created_at": "string",
-        "modified_at": "string"
-      }
-    ]
+    {
+      results: [
+        {
+          "id": 0,
+          "text": "string",
+          "created_at": "string",
+          "modified_at": "string"
+        }
+      ]
+    }
 
 ##### Parameters
 
@@ -126,14 +131,18 @@ Array of randomly selected poem(s).
 
 Type: application/json
 
-    {
-      "id": 0,
-      "text": "string",
-      "words" : [0]
-      "handwriting_id": "string",
-      "created_at": "string",
-      "modified_at": "string"
-    }
+  {
+    results: [
+      {
+        "id": 0,
+        "text": "string",
+        "words" : [0]
+        "handwriting_id": "string",
+        "created_at": "string",
+        "modified_at": "string"
+      }
+    ]
+  }
 
 ##### Parameters
 
@@ -159,7 +168,7 @@ Type: application/json
       "words" : [
         {
           "id": 0,
-          "word": "string",
+          "text": "string",
           "created_at": "string",
           "modified_at": "string"
         }
