@@ -121,10 +121,3 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
-
-# Corsheaders Config
-# https://github.com/ottoyiu/django-cors-headers/
-
-CORS_ORIGIN_WHITELIST = (
-    'localhost:9000',
-)

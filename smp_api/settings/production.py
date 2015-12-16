@@ -16,3 +16,10 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Allow all host headers
 ALLOWED_HOSTS = ['*']
+
+# Corsheaders Config
+# https://github.com/ottoyiu/django-cors-headers/
+
+CORS_ORIGIN_WHITELIST = (
+    'sarahquigley.net',
+)
