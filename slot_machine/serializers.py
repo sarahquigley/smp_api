@@ -9,10 +9,10 @@ class WordSerializer(serializers.ModelSerializer):
 class PoemRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Poem
-        fields = ('id', 'text', 'words', 'created_at', 'modified_at')
+        fields = ('id', 'text', 'words', 'handwriting_id', 'created_at', 'modified_at')
         depth = 1
 
 class PoemCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Poem
-        fields = ('id', 'text', 'words', 'created_at', 'modified_at')
+        fields = ('id', 'text', 'words', 'handwriting_id', 'created_at', 'modified_at')
