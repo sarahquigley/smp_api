@@ -1,42 +1,12 @@
 from django.core.urlresolvers import reverse
-from django.core.exceptions import ValidationError
-from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
-from slot_machine.models import Word, Poem
-
-class WordModelTest(TestCase):
-    def test_on_save_word_text_is_lowercased(self):
-        # Test that Word model text is saved as lowercase
-        word = Word(text='Hello')
-        word.save()
-        self.assertEqual(word.text, 'hello')
-
-    def test_word_text_should_be_invalid(self):
-        # Test that Word model text with spaces or non-letter characters
-        # (other than hyphen) is invalid
-        # This test could possibly be made more thorough
-        invalid = ['a b', ' a', 'a ', '$', '%']
-        for text in invalid:
-            word = Word(text=text)
-            with self.assertRaises(ValidationError):
-                word.full_clean()
-
-
-    def test_word_text_should_be_valid(self):
-        # Test that Word model text without spaces or non-letter characters
-        # (other than hyphen) is invalid
-        # This test could possibly be made more thorough
-        valid = ['a', 'a-b', ur'\u00C0']
-        for text in valid:
-            word = Word(text=text)
-            try:
-                word.full_clean()
-            except ValidationError:
-                self.fail("Word#save raised ValidationError unexpectedly.")
+from slot_machine.models import Word, Poem, RenderedPoem
+from slot_machine.handwriting import Handwriting
+from mock import patch
 
 class BaseViewTest(APITestCase):
-    fixtures = ['test_words.json', 'test_poems.json']
+    fixtures = ['test_words.json', 'test_poems.json', 'test_renderedpoems.json']
 
     def setUp(self):
         self.words = Word.objects.all()
@@ -88,17 +58,27 @@ class WordSubmitViewTest(BaseViewTest):
 class PoemSubmitViewTest(BaseViewTest):
     url = reverse('poem-submit')
 
-    def test_saves_posted_poem_and_word_relations(self):
+    @patch.object(Poem, 'render')
+    def test_saves_posted_poem_and_word_relations(self, mock_render):
         # Test POST - saves new poem and relations to words
-        response = self.client.post(self.url, {'text': 'poem-four', 'words': [1]}, format='json')
+        response = self.client.post(self.url, {
+            'text': 'poem-four',
+            'words': [1],
+            'handwriting_id': '1',
+        }, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Poem.objects.count(), 4)
         self.assertEqual(Poem.objects.last().text, 'poem-four')
 
-    def test_fetches_one_random_poem(self):
+    @patch.object(Poem, 'render')
+    def test_fetches_one_random_poem(self, mock_render):
         # Test POST - after saving poem, fetches one poems and returns them as response
         # Test GET - list one random poem
-        response = self.client.post(self.url, {'text': 'poem-four', 'words': [1]}, format='json')
+        response = self.client.post(self.url, {
+            'text': 'poem-four',
+            'words': [1],
+            'handwriting_id': '1',
+        }, format='json')
         self.assertEqual(len(response.data), 1)
         for item in response.data.get('results'):
             self.assertIn(item.get('id'), map((lambda x: x.id), self.poems))
@@ -111,4 +91,50 @@ class PoemRetrieveViewTest(BaseViewTest):
     def test_gets_poem(self):
         # Test GET - gets a single poem identified by given pk
         response = self.client.get(self.url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+class PoemPreviewViewTest(BaseViewTest):
+    url = reverse('poem-preview')
+
+    @patch.object(Handwriting, 'render')
+    def test_gets_rendered_poem_png_preview(self, mock_handwriting_render):
+        # Test GET - gets rendered poem png for poem of given pk
+        mock_handwriting_render.return_value.status_code = status.HTTP_200_OK
+        response = self.client.get(self.url, format='json')
+        mock_handwriting_render.expect_called_once_with('png')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @patch.object(Handwriting, 'render')
+    def test_gets_rendered_poem_pdf_preview(self, mock_handwriting_render):
+        # Test GET - gets rendered poem png for poem of given pk
+        mock_handwriting_render.return_value.status_code = status.HTTP_200_OK
+        response = self.client.get(self.url, {'type': 'pdf'}, format='json')
+        mock_handwriting_render.expect_called_once_with('pdf')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+class PoemRenderViewTest(BaseViewTest):
+    url = reverse('poem-render', kwargs={'pk': 1})
+
+    def test_gets_rendered_poem_png(self):
+        # Test GET - gets rendered poem png for poem of given pk
+        response = self.client.get(self.url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'image/png')
+
+    def test_gets_rendered_poem_pdf(self):
+        # Test GET - gets rendered poem pdf for poem of given pk
+        response = self.client.get(self.url, {'type': 'pdf'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+
+class HandwritingListViewTest(BaseViewTest):
+    url = reverse('handwriting-list')
+
+    @patch.object(Handwriting, 'list')
+    def test_gets_handwriting_list(self, mock_handwriting_list):
+        # Test GET - gets list of handwritings
+        mock_handwriting_list.return_value.status_code = status.HTTP_200_OK
+        mock_handwriting_list.return_value.text = '[]'
+        response = self.client.get(self.url, format='json')
+        mock_handwriting_list.assert_called_once_with()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
