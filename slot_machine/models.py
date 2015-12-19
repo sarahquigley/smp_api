@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 from django.db import models
 from django.core.validators import RegexValidator
-import random
+from django.db import transaction
+from slot_machine.handwriting import Handwriting
 
 class SlotMachineQuerySet(models.QuerySet):
 
@@ -41,7 +42,35 @@ class Poem(models.Model):
     words = models.ManyToManyField(Word)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    handwriting_id = models.CharField(max_length=50)
     objects = SlotMachineQuerySet.as_manager()
 
     def __unicode__(self):
         return self.text
+
+    def render(self, type='png'):
+        response = Handwriting(
+            text=self.text,
+            handwriting_id=self.handwriting_id
+        ).render(type)
+        # Should catch error responses here
+        return RenderedPoem(poem=self, content=response.content, type=type)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        super(Poem, self).save(*args, **kwargs)
+        self.render('png').save()
+        self.render('pdf').save()
+
+class RenderedPoem(models.Model):
+    content = models.BinaryField()
+    type = models.CharField(max_length=3)
+    poem = models.ForeignKey(Poem, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def content_type(self):
+        if self.type == 'png':
+            return 'image/png'
+        else:
+            return 'application/pdf'
