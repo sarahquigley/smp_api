@@ -16,6 +16,9 @@ class SlotMachineQuerySet(models.QuerySet):
         return self.order_by('?')[:limit]
 
 class Word(models.Model):
+    """
+    Words submitted to the slot machine.
+    """
     text = models.CharField(
         max_length=255,
         validators=[
@@ -33,11 +36,18 @@ class Word(models.Model):
         return self.text
 
     def save(self, *args, **kwargs):
+        """
+        Over-ride save method.
+        Ensure word text is lowercase before save.
+        """
         self.text = self.text.lower()
         super(Word, self).save(*args, **kwargs)
 
 
 class Poem(models.Model):
+    """
+    Poems submitted to the slot machine.
+    """
     text = models.TextField()
     words = models.ManyToManyField(Word)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -49,6 +59,9 @@ class Poem(models.Model):
         return self.text
 
     def render(self, type='png'):
+        """
+        Render poem via HandwritingIO API.
+        """
         response = Handwriting(
             text=self.text,
             handwriting_id=self.handwriting_id
@@ -58,11 +71,18 @@ class Poem(models.Model):
 
     @transaction.atomic
     def save(self, *args, **kwargs):
+        """
+        Over-ride save method.
+        Save two RenderedPoem records (png & pdf) on save of Poem.
+        """
         super(Poem, self).save(*args, **kwargs)
         self.render('png').save()
         self.render('pdf').save()
 
 class RenderedPoem(models.Model):
+    """
+    Poems rendered as PDFs or PNGs to the slot machine.
+    """
     content = models.BinaryField()
     type = models.CharField(max_length=3)
     poem = models.ForeignKey(Poem, on_delete=models.CASCADE)
@@ -70,6 +90,9 @@ class RenderedPoem(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
 
     def content_type(self):
+        """
+        Get correct content_type for HTTP responses returning RenderedPoems
+        """
         if self.type == 'png':
             return 'image/png'
         else:
