@@ -47,6 +47,9 @@ class Word(models.Model):
 class Poem(models.Model):
     """
     Poems submitted to the slot machine.
+    Note: currently files are stored directly in the database in a BinaryField.
+    This was a handy quick solution for the proof of concept app.
+    It should not be the solution used in the final production ready app.
     """
     text = models.TextField()
     words = models.ManyToManyField(Word)
