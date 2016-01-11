@@ -5,6 +5,9 @@ HANDWRITINGIO_KEY = os.environ['HANDWRITINGIO_KEY']
 HANDWRITINGIO_SECRET = os.environ['HANDWRITINGIO_SECRET']
 
 class Handwriting:
+    """
+    Manage calls to HandwritingIO API.
+    """
     API_URL = 'https://api.handwriting.io/'
     TOKEN_PAIR = (HANDWRITINGIO_KEY, HANDWRITINGIO_SECRET)
 
@@ -26,6 +29,9 @@ class Handwriting:
         self.text = text
 
     def render(self, type='png'):
+        """
+        Render text via HandwritingIO API.
+        """
         url = '{0}render/{1}/'.format(self.API_URL, type)
         query_params = {
             'handwriting_id': self.handwriting_id,
@@ -38,6 +44,9 @@ class Handwriting:
 
     @classmethod
     def list(cls):
+        """
+        List Handwritings via HandwritingIO API.
+        """
         url = '{0}handwritings/'.format(cls.API_URL)
         params = {
             'limit': '10',
