@@ -7,7 +7,6 @@ from slot_machine.serializers import (
     PoemCreateSerializer,
     PoemRetrieveSerializer,
 )
-from slot_machine.handwriting import Handwriting
 import json
 
 class SlotMachineSubmitView(generics.CreateAPIView):
@@ -74,47 +73,3 @@ class PoemRetrieve(generics.RetrieveAPIView):
     """
     queryset = Poem.objects.all()
     serializer_class = PoemRetrieveSerializer
-
-class PoemPreview(views.APIView):
-    """
-    Preview text in handwriting via Handwriting.io API.
-    ---
-    """
-    def get(self, request, *args, **kwargs):
-        text = request.query_params.get('text')
-        handwriting_id = request.query_params.get('handwriting_id')
-        type = request.query_params.get('type') or 'png'
-        response = Handwriting(text=text, handwriting_id=handwriting_id).render(type)
-        return HttpResponse(
-            content=response.content,
-            status=response.status_code,
-            content_type=response.headers.get('content-type')
-        )
-
-class PoemRender(generics.GenericAPIView):
-    """
-    Get rendered poem image or pdf.
-    ---
-    """
-    queryset = Poem.objects.all()
-
-    def get(self, request, *args, **kwargs):
-        instance = self.get_object()
-        type = request.query_params.get('type') or 'png'
-        renderedPoem = instance.renderedpoem_set.filter(type=type).first()
-        return HttpResponse(
-            content=renderedPoem.content,
-            status=status.HTTP_200_OK,
-            content_type=renderedPoem.content_type()
-        )
-
-class HandwritingList(views.APIView):
-    """
-    Get list of handwritings via Handwriting.io API.
-    ---
-    """
-    def get(self, request, *args, **kwargs):
-        response = Handwriting.list()
-        data = json.loads(response.text)
-        return Response(data, status=response.status_code)
-
